@@ -1,47 +1,90 @@
 @startuml
-
+top to bottom direction
 skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam linetype ortho
 
-' Privileged authorities (break-glass / override / suspend)
-actor "Privilege Broker" as PrivAuthority
-
-
-' General facility population (can request emergency access)
-actor "Facility User (Researcher, Technician etc.)" as FacilityUser
-
-
-
-' Audit stakeholders
-actor "Audit Stakeholder" as AuditStakeholder
-PrivAuthority -|> AuditStakeholder
-actor "Auditor / Compliance" as Auditor
-Auditor -|> AuditStakeholder
-
-rectangle "Emergency Access System" {
-
-  usecase "Request Emergency Access" as UC_RequestEA
-  usecase "Grant Emergency Access\n(Break-glass)" as UC_GrantEA
-  usecase "Manual Override Door/Zone" as UC_Override
-  usecase "Suspend/Cancel Permit/Access" as UC_Suspend
-  usecase "Record Justification &\nIncident Reference" as UC_Justify
-  usecase "Post-incident Review / Audit" as UC_Audit
+package "Actors" as Actors {
+  actor "Facility User\n(Researcher, Technician etc.)" as FacilityUser
+  actor "Privilege Broker" as PrivAuthority
+  actor "Audit Stakeholder" as AuditStakeholder
 }
 
-'Associations'
-FacilityUser     --> UC_RequestEA
-PrivAuthority    --> UC_GrantEA
-PrivAuthority    --> UC_Override
-PrivAuthority    --> UC_Suspend
-AuditStakeholder --> UC_Audit
+' =========================
+' System boundary (give alias so we can constrain layout)
+' =========================
+rectangle "Emergency Access System" as EAS {
+
+  package "RFID Runtime Flow" as P_RFID {
+    usecase "Validate Access\n(Policy Decision)" as UC_Validate
+    usecase "Unlock Door / Deny Entry\n(Policy Enforcement)" as UC_Enforce
+    usecase "Record Access Attempt\n(Entry/Exit/Denied/Override)" as UC_LogAccess
+  }
+
+  package "Privileged Operations" as P_PrivOps {
+    usecase "Request Emergency Access" as UC_RequestEA
+    usecase "Grant Emergency Access\n(Break-glass)" as UC_GrantEA
+    usecase "Suspend/Cancel Access" as UC_Suspend
+  }
+
+  package "Administration" as P_Admin {
+    usecase "Manage Permissions\n(Assign/Remove Room Access)" as UC_Permissions
+  }
+
+  package "Accountability" as P_Audit {
+    usecase "Record Justification &\nIncident Reference" as UC_Justify
+    usecase "Post-incident Review / Audit" as UC_Audit
+  }
+}
+
+' =========================
+' Layout constraints (reduce crossings)
+' Put Accountability UNDER PrivOps so the include/extend lines drop down cleanly.
+' =========================
+Actors -[hidden]down-> EAS
+
+P_RFID    -[hidden]down-> P_PrivOps
+P_PrivOps -[hidden]down-> P_Audit
+P_Audit   -[hidden]down-> P_Admin
+
+' Keep actors aligned over the packages they mainly talk to
+FacilityUser   -[hidden]right-> PrivAuthority
+PrivAuthority  -[hidden]right-> AuditStakeholder
+
+' =========================
+' Associations (use -down-> hints to encourage vertical routing)
+' =========================
+
+' Emergency request (user-initiated)
+FacilityUser -down-> UC_RequestEA
 
 
-UC_GrantEA  ..> UC_Justify : <<include>>
-UC_Override ..> UC_Justify : <<include>>
-UC_Suspend  ..> UC_Justify : <<include>>
+' Privilege Broker powers privileged ops + admin
+PrivAuthority -down-> UC_GrantEA
 
+PrivAuthority -down-> UC_Suspend
+PrivAuthority -down-> UC_Permissions
 
-UC_Audit ..> UC_GrantEA  : <<extend>>
-UC_Audit ..> UC_Override : <<extend>>
-UC_Audit ..> UC_Suspend  : <<extend>>
+' Audit / review
+AuditStakeholder -down-> UC_Audit
+
+' =========================
+' Includes/extends arranged to mostly go downward (fewer intersections)
+' =========================
+
+UC_Validate ..> UC_Enforce : <<include>>
+UC_Validate ..> UC_LogAccess : <<include>>
+UC_Enforce  ..> UC_LogAccess : <<include>>
+UC_GrantEA ..> UC_LogAccess : <<include>>
+
+UC_GrantEA     ..> UC_Justify : <<include>>
+UC_GrantEA    ..> UC_Justify : <<include>>
+UC_Suspend     ..> UC_Justify : <<include>>
+UC_Permissions ..> UC_Justify : <<include>>
+
+UC_Audit ..> UC_GrantEA     : <<extend>>
+UC_Audit ..> UC_GrantEA    : <<extend>>
+UC_Audit ..> UC_Suspend     : <<extend>>
+UC_Audit ..> UC_Permissions : <<extend>>
 
 @enduml
