@@ -1,0 +1,68 @@
+@startuml
+left to right direction
+
+' Explicitly declare use cases so the renderer treats this as a Use Case diagram
+actor Researcher
+actor Technician
+actor Student
+actor "Visiting Collaborator" as Visitor
+actor "Maintenance Team Member" as Maintenance
+actor "Catering Staff" as Catering
+actor "External Contractor" as Contractor
+
+actor "Security Officer /\nControl Room Operator" as Security
+actor "Duty Manager /\nFacility Manager" as DutyMgr
+actor "Safety Officer" as Safety
+actor "Area Supervisor" as Supervisor
+actor "Auditor / Compliance" as Auditor
+
+rectangle "Access Management System" {
+
+  usecase "Request Emergency Access" as UC_RequestEA
+  usecase "Grant Emergency Access\n(Break-glass)" as UC_GrantEA
+  usecase "Manual Override Door/Zone" as UC_Override
+  usecase "Suspend/Cancel Permit/Access" as UC_Suspend
+  usecase "Record Justification &\nIncident Reference" as UC_Justify
+  usecase "Post-incident Review / Audit" as UC_Audit
+}
+
+' General roles can request emergency access
+Researcher  --> UC_RequestEA
+Technician  --> UC_RequestEA
+Student     --> UC_RequestEA
+Visitor     --> UC_RequestEA
+Maintenance --> UC_RequestEA
+Catering    --> UC_RequestEA
+Contractor  --> UC_RequestEA
+
+' Privileged roles can grant/override/suspend
+Security   --> UC_GrantEA
+DutyMgr    --> UC_GrantEA
+Safety     --> UC_GrantEA
+Supervisor --> UC_GrantEA
+
+Security --> UC_Override
+DutyMgr  --> UC_Override
+
+Security   --> UC_Suspend
+DutyMgr    --> UC_Suspend
+Safety     --> UC_Suspend
+Supervisor --> UC_Suspend
+
+' Audit / review stakeholders
+Auditor    --> UC_Audit
+Security   --> UC_Audit
+DutyMgr    --> UC_Audit
+Safety     --> UC_Audit
+Supervisor --> UC_Audit
+
+' Strong audit obligations: justification is mandatory
+UC_GrantEA  ..> UC_Justify : <<include>>
+UC_Override ..> UC_Justify : <<include>>
+UC_Suspend  ..> UC_Justify : <<include>>
+
+' Reviews occur after exceptional actions (optional extension relationship)
+UC_Audit ..> UC_GrantEA  : <<extend>>
+UC_Audit ..> UC_Override : <<extend>>
+UC_Audit ..> UC_Suspend  : <<extend>>
+@enduml
