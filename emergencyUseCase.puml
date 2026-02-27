@@ -38,12 +38,12 @@ PrivAuthority  -[hidden]right-> AuditStakeholder
 ' Associations
 
 ' Emergency request (user-initiated)
-FacilityUser -down-> UC_RequestEA
+FacilityUser -down- UC_RequestEA
 
 
 ' Privilege Broker
-PrivAuthority -down-> UC_GrantEA
-PrivAuthority -down-> UC_Permissions
+PrivAuthority -down- UC_GrantEA
+PrivAuthority -down- UC_Permissions
 
 
 
@@ -51,7 +51,7 @@ UC_Justify -[hidden]right-> UC_Audit
 
 PrivAuthority -[hidden]left->AuditStakeholder
 UC_GrantEA -> P_Audit : <<include>>
-UC_Permissions -down-> P_Audit
+UC_Permissions -> P_Audit : <<include>>
 UC_Audit -> UC_Justify : <<include>>
 
 @enduml
