@@ -10,9 +10,8 @@ package "Actors" as Actors {
   actor "Audit Stakeholder" as AuditStakeholder
 }
 
-' =========================
-' System boundary (give alias so we can constrain layout)
-' =========================
+
+' System boundary
 rectangle "Emergency Access System" as EAS {
 
   package "Privileged Operations" as P_PrivOps {
@@ -31,10 +30,6 @@ rectangle "Emergency Access System" as EAS {
   }
 }
 
-' =========================
-' Layout constraints (reduce crossings)
-' Put Accountability UNDER PrivOps so the include/extend lines drop down cleanly.
-' =========================
 Actors -[hidden]down-> EAS
 
 P_PrivOps -[hidden]down-> P_Audit
@@ -44,9 +39,8 @@ P_Audit   -[hidden]down-> P_Admin
 FacilityUser   -[hidden]right-> PrivAuthority
 PrivAuthority  -[hidden]right-> AuditStakeholder
 
-' =========================
-' Associations (use -down-> hints to encourage vertical routing)
-' =========================
+
+' Associations
 
 ' Emergency request (user-initiated)
 FacilityUser -down-> UC_RequestEA

@@ -1,0 +1,60 @@
+@startuml
+start
+!pragma useVerticalIf on
+skinparam linetype ortho
+skinparam shadowing false
+
+title Emergency Access & Manual Override
+
+partition "Facility User" {
+  :Arrive at controlled door;
+}
+
+partition "Emergency Access System" {
+  :Receive credential + door ID;
+  :Lookup permit policy store (DB Lookup);
+  :Evaluate standard access rules;
+
+}
+
+if (Standard access allowed?) then (Yes)
+  :Log ALLOW;
+  :Unlock door;
+  stop
+else (No)
+  :Log DENY (standard) + reason;
+  :Access denied displayed;
+
+  if (Emergency declared?) then (Yes)
+    :Authenticate authority;
+    :Capture justification + incident ID;
+    :Approve break-glass / override?;
+
+    if (Approved?) then (Yes)
+      :Record justification;
+      :Create temporary emergency grant;
+      :Re-check hard constraints;
+
+      if (Hard constraint blocks entry?) then (Yes)
+        :Log DENY (hard constraint);
+        :Entry denied;
+        stop
+      else (No)
+        :Log ALLOW (emergency);
+        :Unlock door (time-limited);
+        :Enter zone;
+        stop
+      endif
+
+    else (No)
+      :Log denial by Privilege Broker;
+      :Entry denied;
+      stop
+    endif
+
+  else (No)
+    stop
+  endif
+endif
+
+@enduml
