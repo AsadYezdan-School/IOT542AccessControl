@@ -17,10 +17,6 @@ rectangle "Emergency Access System" as EAS {
   package "Privileged Operations" as P_PrivOps {
     usecase "Request Emergency Access" as UC_RequestEA
     usecase "Grant Emergency Access\n(Break-glass)" as UC_GrantEA
-    usecase "Suspend/Cancel Access" as UC_Suspend
-  }
-
-  package "Administration" as P_Admin {
     usecase "Manage Permissions\n(Assign/Remove Room Access)" as UC_Permissions
   }
 
@@ -33,7 +29,6 @@ rectangle "Emergency Access System" as EAS {
 Actors -[hidden]down-> EAS
 
 P_PrivOps -[hidden]down-> P_Audit
-P_Audit   -[hidden]down-> P_Admin
 
 ' Keep actors aligned over the packages they mainly talk to
 FacilityUser   -[hidden]right-> PrivAuthority
@@ -48,20 +43,15 @@ FacilityUser -down-> UC_RequestEA
 
 ' Privilege Broker
 PrivAuthority -down-> UC_GrantEA
-PrivAuthority -down-> UC_Suspend
 PrivAuthority -down-> UC_Permissions
 
-' Audit / review
-AuditStakeholder -down-> UC_Suspend
 
-UC_GrantEA     ..> UC_Justify : <<include>>
-UC_GrantEA    ..> UC_Justify : <<include>>
-UC_Suspend     ..> UC_Justify : <<include>>
-UC_Permissions ..> UC_Justify : <<include>>
 
-UC_Audit ..> UC_GrantEA     : <<extend>>
-UC_Audit ..> UC_GrantEA    : <<extend>>
-UC_Audit ..> UC_Suspend     : <<extend>>
-UC_Audit ..> UC_Permissions : <<extend>>
+UC_Justify -[hidden]right-> UC_Audit
+
+PrivAuthority -[hidden]left->AuditStakeholder
+UC_GrantEA -> P_Audit : <<include>>
+UC_Permissions -down-> P_Audit
+UC_Audit -> UC_Justify : <<include>>
 
 @enduml
