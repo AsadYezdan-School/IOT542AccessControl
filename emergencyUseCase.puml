@@ -15,12 +15,6 @@ package "Actors" as Actors {
 ' =========================
 rectangle "Emergency Access System" as EAS {
 
-  package "RFID Runtime Flow" as P_RFID {
-    usecase "Validate Access\n(Policy Decision)" as UC_Validate
-    usecase "Unlock Door / Deny Entry\n(Policy Enforcement)" as UC_Enforce
-    usecase "Record Access Attempt\n(Entry/Exit/Denied/Override)" as UC_LogAccess
-  }
-
   package "Privileged Operations" as P_PrivOps {
     usecase "Request Emergency Access" as UC_RequestEA
     usecase "Grant Emergency Access\n(Break-glass)" as UC_GrantEA
@@ -43,7 +37,6 @@ rectangle "Emergency Access System" as EAS {
 ' =========================
 Actors -[hidden]down-> EAS
 
-P_RFID    -[hidden]down-> P_PrivOps
 P_PrivOps -[hidden]down-> P_Audit
 P_Audit   -[hidden]down-> P_Admin
 
@@ -59,23 +52,13 @@ PrivAuthority  -[hidden]right-> AuditStakeholder
 FacilityUser -down-> UC_RequestEA
 
 
-' Privilege Broker powers privileged ops + admin
+' Privilege Broker
 PrivAuthority -down-> UC_GrantEA
-
 PrivAuthority -down-> UC_Suspend
 PrivAuthority -down-> UC_Permissions
 
 ' Audit / review
-AuditStakeholder -down-> UC_Audit
-
-' =========================
-' Includes/extends arranged to mostly go downward (fewer intersections)
-' =========================
-
-UC_Validate ..> UC_Enforce : <<include>>
-UC_Validate ..> UC_LogAccess : <<include>>
-UC_Enforce  ..> UC_LogAccess : <<include>>
-UC_GrantEA ..> UC_LogAccess : <<include>>
+AuditStakeholder -down-> UC_Suspend
 
 UC_GrantEA     ..> UC_Justify : <<include>>
 UC_GrantEA    ..> UC_Justify : <<include>>
