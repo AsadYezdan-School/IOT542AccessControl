@@ -4,13 +4,13 @@ start
 skinparam linetype ortho
 skinparam shadowing false
 
-title Emergency Access & Manual Override
+title Access Control At The Door
 
 partition "Facility User" {
   :Arrive at controlled door;
 }
 
-partition "Emergency Access System" {
+partition " Default AMS" {
   :Receive credential + door ID;
   :Lookup permit policy store (DB Lookup);
   :Evaluate standard access rules;
@@ -19,18 +19,16 @@ partition "Emergency Access System" {
 
 if (Standard access allowed?) then (Yes)
   :Log ALLOW;
-  :Unlock door;
+  :Intitiate defined access protocol \n (standard entry, supervisor necessary etc)) ;
   stop
 else (No)
-  :Log DENY (standard) + reason;
+  :Log DENY ( Reason: standard);
   :Access denied displayed;
-
+  partition "Emergency Access Control System"{
   if (Emergency declared?) then (Yes)
-    :Authenticate authority;
     :Capture justification + incident ID;
-    :Approve break-glass / override?;
 
-    if (Approved?) then (Yes)
+    if (Valid incident ID?) then (Yes)
       :Record justification;
       :Create temporary emergency grant;
       :Re-check hard constraints;
@@ -46,8 +44,9 @@ else (No)
         stop
       endif
 
+
     else (No)
-      :Log denial by Privilege Broker;
+      :Log DENY (Reason: Invalid incident ID);
       :Entry denied;
       stop
     endif
@@ -55,6 +54,7 @@ else (No)
   else (No)
     stop
   endif
+  }
 endif
 
 @enduml
