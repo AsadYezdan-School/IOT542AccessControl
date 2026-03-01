@@ -1,4 +1,5 @@
-@startuml
+gs
+gs@startuml
 top to bottom direction
 skinparam actorStyle awesome
 skinparam packageStyle rectangle

@@ -19,28 +19,25 @@ partition " Default AMS" {
 
 if (Standard access allowed?) then (Yes)
   :Log ALLOW;
-  :Intitiate defined access protocol \n (standard entry, supervisor necessary etc)) ;
+  :Intitiate defined access protocol ;
   stop
 else (No)
   :Log DENY ( Reason: standard);
   :Access denied displayed;
-  partition "Emergency Access Control System"{
+  partition "AMS Emergency Protocols"{
   if (Emergency declared?) then (Yes)
     :Capture justification + incident ID;
 
     if (Valid incident ID?) then (Yes)
       :Record justification;
-      :Create temporary emergency grant;
-      :Re-check hard constraints;
+      :Create emergency AccessGrant \n for user using incident ID;
 
-      if (Hard constraint blocks entry?) then (Yes)
+      if (Room allows emergency access?) then (No)
         :Log DENY (hard constraint);
-        :Entry denied;
         stop
-      else (No)
+      else (Yes)
         :Log ALLOW (emergency);
-        :Unlock door (time-limited);
-        :Enter zone;
+        : Intitiate emergency access protocol;
         stop
       endif
 
