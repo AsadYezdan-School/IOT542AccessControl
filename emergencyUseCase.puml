@@ -1,5 +1,4 @@
-gs
-gs@startuml
+@startuml
 top to bottom direction
 skinparam actorStyle awesome
 skinparam packageStyle rectangle
@@ -17,7 +16,7 @@ rectangle "Emergency Access System" as EAS {
 
   package "Privileged Operations" as P_PrivOps {
     usecase "Request Emergency Access" as UC_RequestEA
-    usecase "Grant Emergency Access\n(Break-glass)" as UC_GrantEA
+    usecase "Enable BreakGlass for incident" as UC_GrantEA
     usecase "Manage Permissions\n(Assign/Remove Room Access)" as UC_Permissions
   }
 
@@ -33,7 +32,7 @@ P_PrivOps -[hidden]down-> P_Audit
 
 ' Keep actors aligned over the packages they mainly talk to
 FacilityUser   -[hidden]right-> PrivAuthority
-PrivAuthority  -[hidden]right-> AuditStakeholder
+PrivAuthority  -[hidden]left-> AuditStakeholder
 
 
 ' Associations
@@ -54,5 +53,7 @@ PrivAuthority -[hidden]left->AuditStakeholder
 UC_GrantEA -> P_Audit : <<include>>
 UC_Permissions -> P_Audit : <<include>>
 UC_Audit -> UC_Justify : <<include>>
+ AuditStakeholder -> P_Audit
+
 
 @enduml

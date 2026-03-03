@@ -33,6 +33,11 @@ else (No)
       :Create emergency AccessGrant \n for user using incident ID;
 
       if (Room allows emergency access?) then (No)
+        if (Incident has breakGlass policy) then (Yes)
+        : Allow access;
+        stop
+        else (No)
+        endif
         :Log DENY (hard constraint);
         stop
       else (Yes)
