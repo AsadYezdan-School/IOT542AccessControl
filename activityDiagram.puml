@@ -10,23 +10,23 @@ partition "Facility User" {
   :Arrive at controlled door;
 }
 
-partition Door Hardware {
-  :Read user credentials;
+partition "Door Hardware" {
+  :Receive credential + door ID;
   :Send request to Policy Evaluation Engine;
 
+  if (Access allowed?) then (Yes)
+    :Log ALLOW ( Reason: standard);
+    :Initiate defined access protocol;
+    stop
+  else (No)
+    :Log DENY ( Reason: standard);
+    :Access denied displayed;
+  endif
+}
 
-
-if (Access allowed?) then (Yes)
-  :Log ALLOW ( Reason: standard);
-  :Intitiate defined access protocol ;
-  stop
-
-else (No)
-  :Log DENY ( Reason: standard);
-  :Access denied displayed;
-  partition "AMS Emergency Protocols"{
+partition "AMS Emergency Protocols" {
   if (Emergency declared?) then (Yes)
-    :Capture justification + incident ID;
+    :Check facility user is assigned an Incident;
 
     if (Valid incident ID?) then (Yes)
       :Record justification;
@@ -34,19 +34,18 @@ else (No)
 
       if (Access allowed under emergencyConditions?) then (No)
         if (Incident has breakGlass policy) then (Yes)
-        :Log ALLOW (breakGlass);;
-        : Allow access;
-        stop
+          :Log ALLOW (breakGlass);
+          :Allow access;
+          stop
         else (No)
         endif
         :Log DENY (hard constraint);
         stop
       else (Yes)
         :Log ALLOW (emergency);
-        : Intitiate emergency access protocol;
+        :Initiate emergency access protocol;
         stop
       endif
-
 
     else (No)
       :Log DENY (Reason: Invalid incident ID);
@@ -57,7 +56,5 @@ else (No)
   else (No)
     stop
   endif
-  }
-endif
 }
 @enduml
