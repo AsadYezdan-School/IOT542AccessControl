@@ -1,0 +1,34 @@
+@startuml
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "External Maintenance\nContractors" as EMC
+actor "Security\nAdministrators" as SA
+actor "Hardware" as HW
+
+rectangle "Access Control System" {
+  usecase "Enforce Access Policies\n(Supervisor Presence\nin Critical Rooms)" as a
+  usecase "Managing Machines\nInside Rooms" as b
+  usecase "Manage User\nRole Assignment" as c
+  usecase "Manage User\nRole Changes" as d
+  usecase "Approve BreakGlass Access" as f
+  usecase "Request Access\n(Regular + Emergency)" as e
+}
+
+actor "Security & Policy\nAdministrators" as SPA
+
+
+' Permissions
+SPA --> c
+SPA --> d
+EMC --> e
+SA  --> c
+HW  --> b
+HW  --> a
+SPA --> f
+SPA --> e
+EMC --> e
+
+@enduml
