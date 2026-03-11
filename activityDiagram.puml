@@ -4,16 +4,19 @@ start
 skinparam linetype ortho
 skinparam shadowing false
 
-title Access Control At The Door
+title Access Control At The Door (Regular And Emergency Cases)
 
 partition "Facility User" {
-  :Arrive at controlled door;
+  :Present ID to door reader;
 }
 
 partition "Door Hardware" {
-  :Receive credential + door ID;
-  :Send request to Policy Evaluation Engine;
-
+  :Log REQUEST (User ID, Timestamp, Door ID);
+  if (Local cache contains decision for user?) then (Yes)
+    :Use cached decision;
+  else (No)
+    :Send request to Policy Evaluation Engine;
+  endif
   if (Access allowed?) then (Yes)
     :Log ALLOW ( Reason: standard);
     :Initiate defined access protocol;
@@ -26,11 +29,9 @@ partition "Door Hardware" {
 
 partition "AMS Emergency Protocols" {
   if (Emergency declared?) then (Yes)
-    :Check facility user is assigned an Incident;
+    :Capture Incident ID;
 
     if (Valid incident ID?) then (Yes)
-      :Record justification;
-      :Create emergency AccessGrant \n for user using incident ID;
 
       if (Access allowed under emergencyConditions?) then (No)
         if (Incident has breakGlass policy) then (Yes)
